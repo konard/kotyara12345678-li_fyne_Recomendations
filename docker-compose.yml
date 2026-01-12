@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  typesense:
+    image: typesense/typesense:29.0
+    restart: unless-stopped
+    environment:
+      TYPESENSE_API_KEY: "dev-key"
+      TYPESENSE_DATA_DIR: "/data"
+      TYPESENSE_ENABLE_CORS: "true"
+    volumes:
+      - typesense-data:/data
+    ports:
+      - "8108:8108"
+    command: >
+      --api-key=dev-key
+      --data-dir=/data
+      --listen-port=8108
+      --enable-cors=true
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      TYPESENSE_HOST: "typesense"
+      TYPESENSE_PORT: "8108"
+      TYPESENSE_PROTOCOL: "http"
+      TYPESENSE_API_KEY: "dev-key"
+      TYPESENSE_COLLECTION: "issues"
+      TYPESENSE_VECTOR_DIM: "384"
+      FORWARD_URL: ""
+      EMBEDDING_MODEL: "/app/models/fine_tuned"
+    depends_on:
+      - typesense
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./models/fine_tuned:/app/models/fine_tuned:ro
+
+volumes:
+  typesense-data:

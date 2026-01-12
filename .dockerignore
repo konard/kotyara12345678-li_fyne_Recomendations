@@ -1,0 +1,11 @@
+models/
+pycache/
+*.pyc
+*.pyo
+*.pyd
+*.log
+.env
+.venv/
+.idea/
+.vscode/
+.git/
