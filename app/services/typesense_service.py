@@ -100,19 +100,18 @@ class TypesenseService:
             "Content-Type": "application/json",
         }
 
-        # Формат для Typesense: vector_query с именем поля как ключ
+        # Формат для Typesense: vector_query - строка вида "field_name:([v1,v2,...], k:N)"
+        vector_str = ",".join(str(v) for v in embedding)
         search_body = {
             "q": "*",
-            "vector_query": {
-                "embedding": {
-                    "vector": embedding,
-                    "k": k
-                }
-            },
-            "limit": k,
-            "include_fields": "id,title,description",
+            "vector_query": f"embedding:([{vector_str}], k:{k})",
+            "exclude_fields": "embedding",
         }
         
+        if settings.debug:
+            print(f"[Typesense] Vector search URL: {search_url}")
+            print(f"[Typesense] Vector search body (vector_query): {search_body.get('vector_query', '')[:100]}...")
+
         try:
             with httpx.Client(timeout=10.0) as client:
                 response = client.post(
@@ -123,7 +122,10 @@ class TypesenseService:
                 response.raise_for_status()
                 res = response.json()
                 hits = res.get("hits", [])
-                    
+
+                if settings.debug:
+                    print(f"[Typesense] Vector search found {len(hits)} hits")
+
         except httpx.HTTPStatusError as e:
             print(f"[Typesense] HTTP ERROR {e.response.status_code}: {e.response.text}")
             return []

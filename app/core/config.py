@@ -13,6 +13,7 @@ class Settings(BaseModel):
     embedding_model: str = os.getenv(
         "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
     )
+    debug: bool = os.getenv("DEBUG", "").lower() in ("1", "true", "yes")
 
 
 settings = Settings()
